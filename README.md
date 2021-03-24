@@ -1,3 +1,7 @@
+# Quick Weather Check
+
+To be completed later. New features to be implemented soon.
+
 # Data analysis
 - Document here the project: basicweatherapp
 - Description: Project Description
