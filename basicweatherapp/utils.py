@@ -36,7 +36,9 @@ def forecasts(woeid, dates):
     '''
     fc = []
     for d in dates:
-        fc.append(daily_forecast(woeid, d.year, d.month, d.day))
+        one_day = daily_forecast(woeid, d.year, d.month, d.day)
+        if one_day != None:
+            fc.append(one_day)
     return fc
 
 def get_data(city = 'Berlin', past = 14, pred = 4):
