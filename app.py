@@ -36,14 +36,16 @@ include_wind = st.sidebar.checkbox('wind information')
 include_air = st.sidebar.checkbox('air pressure')
 include_humidity = st.sidebar.checkbox('humidity')
 include_temp_vs_humidity = st.sidebar.checkbox('temperature vs humidity')
-include_temp_humidity_air = st.sidebar.checkbox('temperature vs humidity vs air pressure')
+include_temp_humidity_air \
+    = st.sidebar.checkbox('temperature vs humidity vs air pressure')
 include_numerical = st.sidebar.checkbox('table of numerical values')
 
 text = st.sidebar.text_input('Please, enter a city and press Submit.')
 
 if st.sidebar.button('Submit'):
     # make a request to OUR api
-    city_data, today_data, df = get_data(text, past = hist_days, pred = pred_days)
+    city_data, today_data, df = get_data(text, past=hist_days,
+                                               pred=pred_days)
 
     if city_data == -1:
         st.markdown('''I could not find it...''')
@@ -67,16 +69,15 @@ if st.sidebar.button('Submit'):
 
         if include_numerical:
         # create a dataframe "today_df" to show from "data_today"
-            columns_needed = ['Place',  'applicable_date', 'weather_state_name',
-                              'wind_direction_compass',
+            columns_needed = ['Place',  'applicable_date',
+                              'weather_state_name', 'wind_direction_compass',
                               'min_temp', 'max_temp', 'the_temp', 'wind_speed',
                               'air_pressure', 'humidity']
 
             new_column_names = ['Place', 'Date', 'Weather state',
-                                'Wind direction',
-                                'Minimum temperature', 'Maximum temperature',
-                                'Actual Temperature', 'Wind speed', 'Air pressure',
-                                'Humidity']
+                                'Wind direction', 'Minimum temperature',
+                                'Maximum temperature',  "Today's Temperature",
+                                'Wind speed', 'Air pressure', 'Humidity']
 
             new_today = {}
             for old, new in zip(columns_needed[1:],new_column_names[1:]):
@@ -89,11 +90,12 @@ if st.sidebar.button('Submit'):
                 columns=["Today's data"]
                 ).round(decimals=2)
             # dataframe created.
-            st.write(today_df)
+            st.write(today_df.style\
+                        .set_properties(**{"background-color": "beige",
+                                           "color": "darkblue"})\
+                        .set_precision(2))
 
         # show the graphs
-
-
         # the title will be
         title = f"{city_data['title']} ({city_data['location_type']}), temperature"
         if include_wind:
@@ -126,21 +128,27 @@ if st.sidebar.button('Submit'):
             fig.add_trace(go.Scatter(x=df1.applicable_date, y=df1.the_temp,
                                      marker_symbol=df1.winddir,
                                      marker_size=df1.wind_speed*3.5,
-                                     name = 'Temp',
-                                     line = {'color':'black'},legendgroup=0))
+                                     name='Temp',
+                                     line={'color': 'black'},
+                                     legendgroup=0))
         else:
             fig.add_trace(go.Scatter(x=df1.applicable_date, y=df1.the_temp,
-                                     name = 'Temp', line = {'color':'black'},legendgroup=0))
+                                     name='Temp',
+                                     line={'color': 'black'},
+                                     legendgroup=0))
 
         # the predictions are represented with lighter colours
 
         # minimum prediction line
         fig.add_trace(go.Scatter(x=df2.applicable_date, y=df2.min_temp,
-                                 name = 'Min (pred)', line = {'color':'lightblue'},legendgroup=1))
+                                 name='Min (pred)',
+                                 line={'color': 'lightblue'},
+                                 legendgroup=1))
 
         # maximums prediction line
-        fig.add_trace(go.Scatter(x=df2.applicable_date, y=df2.max_temp, name = 'Max (pred)',
-                                 fill='tonexty', line = {'color':'lightsalmon'},
+        fig.add_trace(go.Scatter(x=df2.applicable_date, y=df2.max_temp,
+                                 name='Max (pred)', fill='tonexty',
+                                 line={'color' : 'lightsalmon'},
                                  fillcolor='whitesmoke',legendgroup=1))
 
         # exact temperature prediction
@@ -150,10 +158,14 @@ if st.sidebar.button('Submit'):
             fig.add_trace(go.Scatter(x=df2.applicable_date, y=df2.the_temp,
                                      marker_symbol=df2.winddir,
                                      marker_size=df2.wind_speed*3.5,
-                                     name = 'Temp (pred)', line = {'color':'gray'},legendgroup=1))
+                                     name='Temp (pred)',
+                                     line={'color': 'gray'},
+                                     legendgroup=1))
         else:
             fig.add_trace(go.Scatter(x=df2.applicable_date, y=df2.the_temp,
-                                     name = 'Temp (pred)', line = {'color':'gray'},legendgroup=1))
+                                     name='Temp (pred)',
+                                     line={'color': 'gray'},
+                                     legendgroup=1))
 
         # show the title, centered
         fig.update_layout(title_text=title, title_x=0.5)
@@ -240,10 +252,14 @@ if st.sidebar.button('Submit'):
         # Temperature - Air pressure - Humidity
         if include_temp_humidity_air:
             title = f"{city_data['title']} ({city_data['location_type']}), temperature vs air pressure vs humidity"
-            df['color'] = [1 if x <= today else 0 for x in pd.to_datetime(df.applicable_date)]
-            fig5 = px.scatter_3d(df, x='the_temp', y='air_pressure', z='humidity', color = 'color', opacity=0.7)
+            df['color'] = [1 if x <= today else 0 \
+                           for x in pd.to_datetime(df.applicable_date)]
+            fig5 = px.scatter_3d(df, x='the_temp', y='air_pressure',
+                                 z='humidity', color='color', opacity=0.7)
             # tight layout
-            fig5.update_layout(title_text=title, margin=dict(l=0, r=0, b=0, t=0), showlegend = False)
+            fig5.update_layout(title_text=title,
+                               margin=dict(l=0, r=0, b=0, t=0),
+                               showlegend=False)
             st.plotly_chart(fig5)
 
         if include_numerical:
@@ -259,8 +275,12 @@ if st.sidebar.button('Submit'):
             df_obs.columns = new_column_names[2:]
             df_pred.columns = new_column_names[2:]
             st.markdown(f"### Observations for {city_data['title']} ({city_data['location_type']})")
-            st.write(df_obs.transpose())
-            st.markdown(f"### Predictions for {city_data['title']} ({city_data['location_type']})")
-            st.write(df_pred.transpose().style.set_properties(**{"background-color": "black", "color": "lawngreen"}))
-
-
+            st.write(df_obs.transpose()\
+                     .style.set_properties(**{"background-color": "beige",
+                                              "color": "darkblue"})\
+                     .set_precision(2))
+            st.markdown(f"### Predictions for {city_data['title']} ({city_data['location_type']}) for the following {len(df_pred)} day{'' if len(df_pred) == 1 else 's'}")
+            st.write(df_pred.transpose()\
+                     .style.set_properties(**{"background-color": "beige",
+                                              "color": "darkblue"})\
+                     .set_precision(2))
